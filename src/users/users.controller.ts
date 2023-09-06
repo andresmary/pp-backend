@@ -1,36 +1,93 @@
 import {
+  Res,
   Body,
   Controller,
   Delete,
   Get,
   Param,
-  Patch,
   Post,
+  HttpStatus,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { User } from './schemas/users.schema';
+import { CreateUsersDto } from './dto/create-users.dto';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
+
   @Post()
-  create(@Body() data: User) {
-    return this.userService.create(data);
+  async createUser(@Res() response, @Body() createUsersDto: CreateUsersDto) {
+    try {
+      const newUser = await this.userService.createUser(createUsersDto);
+      return response.status(HttpStatus.CREATED).json({
+        message: 'User has been created successfully',
+        newUser,
+      });
+    } catch (err) {
+      if (err && err.response?.statusCode === 403) {
+        return response.status(HttpStatus.BAD_REQUEST).json({
+          statusCode: err.response.statusCode,
+          message: err.response.message,
+          error: err.response.error,
+        });
+      } else {
+        return response.status(HttpStatus.BAD_REQUEST).json({
+          statusCode: 400,
+          message: 'Error: User not created!',
+          error: 'Bad Request',
+        });
+      }
+    }
   }
+
   @Get()
-  findAll() {
-    return this.userService.findAll();
+  async getAllUsers(@Res() response) {
+    try {
+      const usersData = await this.userService.getAllUsers();
+      return response.status(HttpStatus.OK).json({
+        message: 'All users data found successfully',
+        usersData,
+      });
+    } catch (err) {
+      return response.status(HttpStatus.BAD_REQUEST).json({
+        statusCode: 404,
+        message: 'Error: Users not found!',
+        error: 'No users',
+      });
+    }
   }
+
   @Get('/:id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(id);
+  async getUser(@Res() response, @Param('id') id: string) {
+    try {
+      const existingUser = await this.userService.getUser(id);
+      return response.status(HttpStatus.OK).json({
+        message: 'User found successfully',
+        existingUser,
+      });
+    } catch (err) {
+      return response.status(HttpStatus.BAD_REQUEST).json({
+        statusCode: 404,
+        message: 'Error: User not found!',
+        error: `No user for id: ${id}`,
+      });
+    }
   }
-  @Patch('/:id')
-  update(@Param('id') id: string, @Body() data: User) {
-    return this.userService.update(id, data);
-  }
+
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.delete(id);
+  async deleteUser(@Res() response, @Param('id') id: string) {
+    try {
+      const deletedUser = await this.userService.deleteUser(id);
+      return response.status(HttpStatus.OK).json({
+        message: 'User deleted successfully',
+        deletedUser,
+      });
+    } catch (err) {
+      return response.status(HttpStatus.BAD_REQUEST).json({
+        statusCode: 404,
+        message: 'Error: User not found!',
+        error: `No user to be deleted for id: ${id}`,
+      });
+    }
   }
 }
