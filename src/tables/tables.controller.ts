@@ -75,6 +75,26 @@ export class TablesController {
     }
   }
 
+  @Patch('/:tableId/add-user/:userId')
+  async addTableUser(
+    @Res() response,
+    @Param('tableId') tableId: string,
+    @Param('userId') userId: string,
+  ) {
+    try {
+      const existingTableVotes = await this.tablesService.addTableUser(
+        tableId,
+        userId,
+      );
+      return response.status(HttpStatus.OK).json({
+        message: 'Table votes have been successfully cleared',
+        existingTableVotes,
+      });
+    } catch (err) {
+      return response.status(err.status).json(err.response);
+    }
+  }
+
   @Patch('/:tableId/clear-votes')
   async clearTableVotes(@Res() response, @Param('tableId') tableId: string) {
     try {

@@ -37,6 +37,18 @@ export class TablesService {
     return existingTable;
   }
 
+  async addTableUser(tableId: string, userId: string): Promise<ITables> {
+    await this.model.updateOne(
+      { _id: tableId },
+      {
+        $addToSet: { votes: [{ vote: 0, userId: userId }] },
+      },
+      { new: true },
+    );
+    const existingTableVotes = await this.model.findById(tableId);
+    return existingTableVotes;
+  }
+
   async clearTableVotes(tableId: string): Promise<ITables> {
     await this.model.updateOne(
       { _id: tableId },
