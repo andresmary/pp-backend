@@ -1,11 +1,18 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory, raw } from '@nestjs/mongoose';
 
 @Schema({ timestamps: true })
 export class Table {
   @Prop({ required: true })
-  name: string;
+  table: string;
 
-  @Prop()
+  @Prop(
+    raw([
+      {
+        vote: { type: Number },
+        userId: { type: String },
+      },
+    ]),
+  )
   votes: Array<{
     vote: number;
     userId: string;
