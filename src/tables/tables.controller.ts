@@ -9,9 +9,11 @@ import {
   Patch,
   HttpStatus,
 } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
 import { TablesService } from './tables.service';
 import { CreateTablesDto } from './dto/create-tables.dto';
 
+@ApiTags('Tables')
 @Controller('tables')
 export class TablesController {
   constructor(private readonly tablesService: TablesService) {}
