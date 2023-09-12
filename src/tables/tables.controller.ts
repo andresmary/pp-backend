@@ -21,10 +21,10 @@ export class TablesController {
   @Post()
   async createTable(@Res() response, @Body() createTablesDto: CreateTablesDto) {
     try {
-      const newUser = await this.tablesService.createTable(createTablesDto);
+      const newTable = await this.tablesService.createTable(createTablesDto);
       return response.status(HttpStatus.CREATED).json({
         message: 'Table has been created successfully',
-        newUser,
+        newTable,
       });
     } catch (err) {
       if (err && err.response?.statusCode === 403) {
@@ -60,10 +60,10 @@ export class TablesController {
     }
   }
 
-  @Get('/:id')
-  async getTable(@Res() response, @Param('id') id: string) {
+  @Get('/:tableId')
+  async getTable(@Res() response, @Param('tableId') tableId: string) {
     try {
-      const existingTable = await this.tablesService.getTable(id);
+      const existingTable = await this.tablesService.getTable(tableId);
       return response.status(HttpStatus.OK).json({
         message: 'Table found successfully',
         existingTable,
@@ -72,7 +72,7 @@ export class TablesController {
       return response.status(HttpStatus.BAD_REQUEST).json({
         statusCode: 404,
         message: 'Error: Table not found!',
-        error: `No table for id: ${id}`,
+        error: `No table for id: ${tableId}`,
       });
     }
   }
@@ -84,31 +84,34 @@ export class TablesController {
     @Param('userId') userId: string,
   ) {
     try {
-      const existingTableVotes = await this.tablesService.addTableUser(
-        tableId,
-        userId,
-      );
+      const tableData = await this.tablesService.addTableUser(tableId, userId);
       return response.status(HttpStatus.OK).json({
-        message: 'Table votes have been successfully cleared',
-        existingTableVotes,
+        message: 'User has been successfully added',
+        tableData,
       });
     } catch (err) {
-      return response.status(err.status).json(err.response);
+      return response.status(HttpStatus.BAD_REQUEST).json({
+        statusCode: 404,
+        message: 'Error: User not found!',
+        error: `No table for id: ${userId}`,
+      });
     }
   }
 
   @Patch('/:tableId/clear-votes')
   async clearTableVotes(@Res() response, @Param('tableId') tableId: string) {
     try {
-      const existingTableVotes = await this.tablesService.clearTableVotes(
-        tableId,
-      );
+      const tableData = await this.tablesService.clearTableVotes(tableId);
       return response.status(HttpStatus.OK).json({
         message: 'Table votes have been successfully cleared',
-        existingTableVotes,
+        tableData,
       });
     } catch (err) {
-      return response.status(err.status).json(err.response);
+      return response.status(HttpStatus.BAD_REQUEST).json({
+        statusCode: 404,
+        message: 'Error: Table not found!',
+        error: `No table for id: ${tableId}`,
+      });
     }
   }
 
@@ -120,24 +123,52 @@ export class TablesController {
     @Param('value') value: number,
   ) {
     try {
-      const existingTableVotes = await this.tablesService.updateTableVote(
+      const tableData = await this.tablesService.updateTableVote(
         tableId,
         userId,
         value,
       );
       return response.status(HttpStatus.OK).json({
         message: 'Table vote has been successfully updated',
-        existingTableVotes,
+        tableData,
       });
     } catch (err) {
-      return response.status(err.status).json(err.response);
+      return response.status(HttpStatus.BAD_REQUEST).json({
+        statusCode: 404,
+        message: 'Error: Table or user not found!',
+        error: 'Check the data input',
+      });
     }
   }
 
-  @Delete(':id')
-  async deleteTable(@Res() response, @Param('id') id: string) {
+  @Delete(':tableId/remove-user/:userId')
+  async removeTableUser(
+    @Res() response,
+    @Param('tableId') tableId: string,
+    @Param('userId') userId: string,
+  ) {
     try {
-      const deletedTable = await this.tablesService.deleteTable(id);
+      const tableData = await this.tablesService.removeTableUser(
+        tableId,
+        userId,
+      );
+      return response.status(HttpStatus.OK).json({
+        message: 'Table user deleted successfully',
+        tableData,
+      });
+    } catch (err) {
+      return response.status(HttpStatus.BAD_REQUEST).json({
+        statusCode: 404,
+        message: 'Error: User in table not found!',
+        error: `No user to be deleted for id: ${userId}`,
+      });
+    }
+  }
+
+  @Delete(':tableId')
+  async deleteTable(@Res() response, @Param('tableId') tableId: string) {
+    try {
+      const deletedTable = await this.tablesService.deleteTable(tableId);
       return response.status(HttpStatus.OK).json({
         message: 'Table deleted successfully',
         deletedTable,
@@ -146,7 +177,7 @@ export class TablesController {
       return response.status(HttpStatus.BAD_REQUEST).json({
         statusCode: 404,
         message: 'Error: Table not found!',
-        error: `No table to be deleted for id: ${id}`,
+        error: `No table to be deleted for id: ${tableId}`,
       });
     }
   }

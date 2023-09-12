@@ -32,13 +32,13 @@ export class UsersService {
     return usersData;
   }
 
-  async getUser(id: string): Promise<IUsers> {
-    const existingUser = await this.model.findById(id);
+  async getUser(userId: string): Promise<IUsers> {
+    const existingUser = await this.model.findById(userId);
     return existingUser;
   }
 
-  async deleteUser(id: string): Promise<IUsers> {
-    const deletedUser = await this.model.findByIdAndRemove(id);
+  async deleteUser(userId: string): Promise<IUsers> {
+    const deletedUser = await this.model.findByIdAndRemove(userId);
     return deletedUser;
   }
 }

@@ -20,10 +20,10 @@ export class UsersController {
   @Post()
   async createUser(@Res() response, @Body() createUsersDto: CreateUsersDto) {
     try {
-      const newUser = await this.userService.createUser(createUsersDto);
+      const userData = await this.userService.createUser(createUsersDto);
       return response.status(HttpStatus.CREATED).json({
         message: 'User has been created successfully',
-        newUser,
+        userData,
       });
     } catch (err) {
       if (err && err.response?.statusCode === 403) {
@@ -59,27 +59,27 @@ export class UsersController {
     }
   }
 
-  @Get('/:id')
-  async getUser(@Res() response, @Param('id') id: string) {
+  @Get('/:userId')
+  async getUser(@Res() response, @Param('userId') userId: string) {
     try {
-      const existingUser = await this.userService.getUser(id);
+      const userData = await this.userService.getUser(userId);
       return response.status(HttpStatus.OK).json({
         message: 'User found successfully',
-        existingUser,
+        userData,
       });
     } catch (err) {
       return response.status(HttpStatus.BAD_REQUEST).json({
         statusCode: 404,
         message: 'Error: User not found!',
-        error: `No user for id: ${id}`,
+        error: `No user for id: ${userId}`,
       });
     }
   }
 
-  @Delete(':id')
-  async deleteUser(@Res() response, @Param('id') id: string) {
+  @Delete(':userId')
+  async deleteUser(@Res() response, @Param('userId') userId: string) {
     try {
-      const deletedUser = await this.userService.deleteUser(id);
+      const deletedUser = await this.userService.deleteUser(userId);
       return response.status(HttpStatus.OK).json({
         message: 'User deleted successfully',
         deletedUser,
@@ -88,7 +88,7 @@ export class UsersController {
       return response.status(HttpStatus.BAD_REQUEST).json({
         statusCode: 404,
         message: 'Error: User not found!',
-        error: `No user to be deleted for id: ${id}`,
+        error: `No user to be deleted for id: ${userId}`,
       });
     }
   }
