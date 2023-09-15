@@ -17,14 +17,15 @@ export class TablesService {
   @InjectModel(User.name) private userModel: Model<IUsers>;
 
   async createTable(createTablesDto: CreateTablesDto): Promise<ITables> {
-    const newTable = await new this.model(createTablesDto);
-    const availableName = await this.model.find({
-      table: newTable.table,
+    const nameExists = await this.model.find({
+      table: createTablesDto.table,
     });
-    if (availableName && availableName[0]?.table === createTablesDto.table) {
+    if (!!nameExists.length) {
       throw new ForbiddenException('Table name not available!');
+    } else {
+      const newTable = await new this.model(createTablesDto);
+      return newTable.save();
     }
-    return newTable.save();
   }
 
   async getAllTables(): Promise<ITables[]> {

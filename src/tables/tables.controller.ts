@@ -21,14 +21,14 @@ export class TablesController {
   @Post()
   async createTable(@Res() response, @Body() createTablesDto: CreateTablesDto) {
     try {
-      const newTable = await this.tablesService.createTable(createTablesDto);
+      const tableData = await this.tablesService.createTable(createTablesDto);
       return response.status(HttpStatus.CREATED).json({
         message: 'Table has been created successfully',
-        newTable,
+        tableData,
       });
     } catch (err) {
       if (err && err.response?.statusCode === 403) {
-        return response.status(HttpStatus.BAD_REQUEST).json({
+        return response.status(HttpStatus.FORBIDDEN).json({
           statusCode: err.response.statusCode,
           message: err.response.message,
           error: err.response.error,
@@ -63,10 +63,10 @@ export class TablesController {
   @Get('/:tableId')
   async getTable(@Res() response, @Param('tableId') tableId: string) {
     try {
-      const existingTable = await this.tablesService.getTable(tableId);
+      const tableData = await this.tablesService.getTable(tableId);
       return response.status(HttpStatus.OK).json({
         message: 'Table found successfully',
-        existingTable,
+        tableData,
       });
     } catch (err) {
       return response.status(HttpStatus.BAD_REQUEST).json({
