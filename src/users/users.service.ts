@@ -38,6 +38,7 @@ export class UsersService {
   }
 
   async deleteUser(userId: string): Promise<IUsers> {
+    // TODO: al eliminar un usuario, de debería quitar de todos los juegos en los que esté
     const deletedUser = await this.model.findByIdAndRemove(userId);
     return deletedUser;
   }

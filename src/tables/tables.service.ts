@@ -23,7 +23,11 @@ export class TablesService {
     if (!!nameExists.length) {
       throw new ForbiddenException('Table name not available!');
     } else {
-      const newTable = await new this.model(createTablesDto);
+      // const newTable = await new this.model(createTablesDto);
+      const newTable = await new this.model({
+        table: createTablesDto.table,
+        votes: [],
+      });
       return newTable.save();
     }
   }
@@ -42,12 +46,14 @@ export class TablesService {
   }
 
   async addTableUser(tableId: string, userId: string): Promise<ITables> {
-    const userExists = await this.userModel.exists({ _id: userId });
+    const userExists = await this.userModel.findById({ _id: userId });
     if (!!userExists) {
       await this.model.updateOne(
         { _id: tableId },
         {
-          $addToSet: { votes: [{ vote: 0, userId: userId }] },
+          $addToSet: {
+            votes: [{ vote: 0, userId: userId, userName: userExists.name }],
+          },
         },
         { new: true },
       );
