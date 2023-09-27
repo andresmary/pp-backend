@@ -23,7 +23,6 @@ export class TablesService {
     if (!!nameExists.length) {
       throw new ForbiddenException('Table name not available!');
     } else {
-      // const newTable = await new this.model(createTablesDto);
       const newTable = await new this.model({
         table: createTablesDto.table,
         votes: [],

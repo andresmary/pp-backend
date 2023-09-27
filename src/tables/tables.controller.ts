@@ -141,7 +141,7 @@ export class TablesController {
     }
   }
 
-  @Delete(':tableId/remove-user/:userId')
+  @Patch(':tableId/remove-user/:userId')
   async removeTableUser(
     @Res() response,
     @Param('tableId') tableId: string,
