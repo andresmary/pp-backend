@@ -7,10 +7,13 @@ import {
   Param,
   Post,
   HttpStatus,
+  ValidationPipe,
+  UsePipes,
 } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUsersDto } from './dto/create-users.dto';
+import { UserId } from './dto/update-user.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -76,8 +79,9 @@ export class UsersController {
     }
   }
 
-  @Delete(':userId')
-  async deleteUser(@Res() response, @Param('userId') userId: string) {
+  @Delete()
+  @UsePipes(ValidationPipe)
+  async deleteUser(@Res() response, @Body() userId: UserId) {
     try {
       const deletedUser = await this.userService.deleteUser(userId);
       return response.status(HttpStatus.OK).json({

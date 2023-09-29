@@ -10,6 +10,7 @@ import { CreateUsersDto } from './dto/create-users.dto';
 import { IUsers } from './interface/users.interface';
 import { Table } from 'src/tables/schemas/tables.schema';
 import { ITables } from 'src/tables/interface/tables.interface';
+import { UserId } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
@@ -40,22 +41,22 @@ export class UsersService {
     return existingUser;
   }
 
-  async deleteUser(userId: string): Promise<IUsers> {
+  async deleteUser(userId: UserId): Promise<IUsers> {
     const isUserInTable = await this.tableModel.find({
-      votes: { $elemMatch: { userId: userId } },
+      votes: { $elemMatch: { userId: userId.userId } },
     });
     if (isUserInTable) {
       isUserInTable.map(async (table) => {
         await this.tableModel.updateOne(
           { _id: table._id },
           {
-            $pull: { votes: { userId: userId } },
+            $pull: { votes: { userId: userId.userId } },
           },
           { safe: true, multi: false },
         );
       });
     }
-    const deletedUser = await this.model.findByIdAndRemove(userId);
+    const deletedUser = await this.model.findByIdAndRemove(userId.userId);
     if (!deletedUser) {
       throw new NotFoundException('User not found!');
     }

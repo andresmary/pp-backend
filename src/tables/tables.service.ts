@@ -10,6 +10,7 @@ import { CreateTablesDto } from './dto/create-tables.dto';
 import { ITables } from './interface/tables.interface';
 import { User } from 'src/users/schemas/users.schema';
 import { IUsers } from 'src/users/interface/users.interface';
+import { ChangeUser, TableId, ChangeVote } from './dto/update-table.dto';
 
 @Injectable()
 export class TablesService {
@@ -44,14 +45,19 @@ export class TablesService {
     return existingTable;
   }
 
-  async addTableUser(tableId: string, userId: string): Promise<ITables> {
-    const userExists = await this.userModel.findById({ _id: userId });
+  async addTableUser(changeUser: ChangeUser): Promise<ITables> {
+    const userExists = await this.userModel.findById({
+      _id: changeUser.userId,
+    });
+    // TODO: check that user isn't already in table
     if (!!userExists) {
       await this.model.updateOne(
-        { _id: tableId },
+        { _id: changeUser.tableId },
         {
           $addToSet: {
-            votes: [{ vote: 0, userId: userId, userName: userExists.name }],
+            votes: [
+              { vote: 0, userId: changeUser.userId, userName: userExists.name },
+            ],
           },
         },
         { new: true },
@@ -59,35 +65,35 @@ export class TablesService {
     } else {
       throw new NotFoundException('User data not found!');
     }
-    const tableData = await this.model.findById(tableId);
+    const tableData = await this.model.findById(changeUser.tableId);
     return tableData;
   }
 
-  async removeTableUser(tableId: string, userId: string): Promise<ITables> {
+  async removeTableUser(changeUser: ChangeUser): Promise<ITables> {
     const isUserInTable = await this.model.findOne(
-      { _id: tableId },
-      { votes: { $elemMatch: { userId: userId } } },
+      { _id: changeUser.tableId },
+      { votes: { $elemMatch: { userId: changeUser.userId } } },
     );
     if (!!isUserInTable.votes.length) {
       await this.model.updateOne(
-        { _id: tableId },
+        { _id: changeUser.tableId },
         {
-          $pull: { votes: { userId: userId } },
+          $pull: { votes: { userId: changeUser.userId } },
         },
         { safe: true, multi: false },
       );
     } else {
       throw new NotFoundException('User in table not found!');
     }
-    const existingTableVotes = await this.model.findById(tableId);
+    const existingTableVotes = await this.model.findById(changeUser.tableId);
     return existingTableVotes;
   }
 
-  async clearTableVotes(tableId: string): Promise<ITables> {
-    const existingTable = await this.model.findById(tableId);
+  async clearTableVotes(tableId: TableId): Promise<ITables> {
+    const existingTable = await this.model.findById(tableId.tableId);
     if (existingTable) {
       await this.model.updateOne(
-        { _id: tableId },
+        { _id: tableId.tableId },
         {
           $set: { 'votes.$[].vote': 0 },
         },
@@ -95,36 +101,32 @@ export class TablesService {
     } else {
       throw new NotFoundException('Table not found!');
     }
-    const tableData = await this.model.findById(tableId);
+    const tableData = await this.model.findById(tableId.tableId);
     return tableData;
   }
 
-  async updateTableVote(
-    tableId: string,
-    userId: string,
-    value: number,
-  ): Promise<ITables> {
-    const existingTable = await this.model.findById(tableId);
+  async updateTableVote(changeVote: ChangeVote): Promise<ITables> {
+    const existingTable = await this.model.findById(changeVote.tableId);
     const isUserInTable = await this.model.findOne(
-      { _id: tableId },
-      { votes: { $elemMatch: { userId: userId } } },
+      { _id: changeVote.tableId },
+      { votes: { $elemMatch: { userId: changeVote.userId } } },
     );
     if (existingTable && isUserInTable.votes.length) {
       await this.model.updateOne(
-        { _id: tableId, 'votes.userId': userId },
+        { _id: changeVote.tableId, 'votes.userId': changeVote.userId },
         {
-          $set: { 'votes.$.vote': value },
+          $set: { 'votes.$.vote': changeVote.value },
         },
       );
     } else {
       throw new NotFoundException('Table or user not found!');
     }
-    const tableData = await this.model.findById(tableId);
+    const tableData = await this.model.findById(changeVote.tableId);
     return tableData;
   }
 
-  async deleteTable(tableId: string): Promise<ITables> {
-    const deletedTable = await this.model.findByIdAndRemove(tableId);
+  async deleteTable(tableId: TableId): Promise<ITables> {
+    const deletedTable = await this.model.findByIdAndRemove(tableId.tableId);
     return deletedTable;
   }
 }
